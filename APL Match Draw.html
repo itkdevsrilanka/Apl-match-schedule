@@ -56,6 +56,13 @@ h2{font-family:var(--display);font-weight:600;font-size:30px;letter-spacing:.04e
 .side .nm small{display:block;font-weight:500;font-size:12px;color:var(--muted)}
 .vs{font-family:var(--display);font-size:30px;color:var(--flame);text-align:center;line-height:1}
 
+.match.po{grid-template-areas:"w a v b" "w p p p";row-gap:8px}
+.match.po .when{grid-area:w}.match.po .side:not(.away){grid-area:a}.match.po .vs{grid-area:v}.match.po .side.away{grid-area:b}
+.pname{grid-area:p;display:flex;gap:10px;align-items:baseline;justify-content:center;font-size:13px;color:var(--muted)}
+.pname b{font-family:var(--display);font-weight:600;font-size:22px;letter-spacing:.05em;text-transform:uppercase;color:var(--gold);line-height:1}
+.slot{flex:1;border:1px dashed var(--line);border-radius:10px;padding:12px;font-weight:600;text-align:center;background:var(--bg)}
+.match.final{background:linear-gradient(90deg,transparent,rgba(242,182,50,.10),transparent)}
+.match.final .slot{border-color:var(--gold)}
 .lunch{display:flex;justify-content:center;align-items:center;gap:14px;padding:16px;border-radius:14px;
   border:1px dashed var(--gold);color:var(--gold);text-align:center;font-variant-numeric:tabular-nums}
 .lunch b{font-family:var(--display);font-size:28px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;line-height:1}
@@ -80,6 +87,8 @@ td .tm{display:block;color:var(--muted);font-size:12px}
   .side.away{flex-direction:column;text-align:center}
   .side .nm{font-size:14px}
   .vs{font-size:24px}
+  .match.po{grid-template-areas:"w w w" "p p p" "a v b"}
+  .pname{justify-content:flex-start}
 }
 </style>
 
@@ -87,14 +96,14 @@ td .tm{display:block;color:var(--muted);font-size:12px}
   <header>
     <div class="eyebrow">Ministry of Cricket presents</div>
     <h1>Ahangama Premier League</h1>
-    <div class="sub">Official match draw · League stage · Single round-robin</div>
+    <div class="sub">Official match draw · League stage + IPL-style playoffs</div>
     <div class="controls">
-      <label for="start">First ball <input id="start" type="time" value="08:00"></label>
+      <label for="start">First ball <input id="start" type="time" value="07:30"></label>
       <label for="day">Match day <input id="day" type="date"></label>
     </div>
     <div class="facts">
       <span class="fact"><b>6</b> teams</span>
-      <span class="fact"><b>15</b> matches</span>
+      <span class="fact"><b>15</b> league + <b>4</b> playoff matches</span>
       <span class="fact"><b>5</b> rounds</span>
       <span class="fact"><b>30 min</b> per match</span>
       <span class="fact"><b>5 min</b> change-over</span>
@@ -111,6 +120,12 @@ td .tm{display:block;color:var(--muted);font-size:12px}
   <section style="display:flex;flex-direction:column;gap:14px">
     <h2>Fixtures</h2>
     <div class="rounds" id="rounds"></div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:14px">
+    <h2>Playoffs</h2>
+    <p class="note" style="text-align:left;margin:0">The top four teams on the league table go through. Playoffs follow the IPL format: the top two get a second chance through Qualifier 2.</p>
+    <div class="round" id="playoffs"></div>
   </section>
 
   <section style="display:flex;flex-direction:column;gap:14px">
@@ -136,7 +151,7 @@ const fmt = m => { m = ((m % 1440) + 1440) % 1440; let h = Math.floor(m/60), mi 
 const T = n => TEAMS[n-1];
 
 function build(){
-  const v = document.getElementById('start').value || '08:00';
+  const v = document.getElementById('start').value || '07:30';
   let [h,m] = v.split(':').map(Number), t = h*60+m;
   const roundsEl = document.getElementById('rounds'); roundsEl.innerHTML='';
   const per = {}; let no = 0, needGap = false;
@@ -164,6 +179,25 @@ function build(){
       roundsEl.appendChild(l); t+=LUNCH_MIN; needGap = false;
     }
   });
+  const PO = [
+    ['Qualifier 1','1st place','2nd place','Winner goes straight to the Final'],
+    ['Eliminator','3rd place','4th place','Loser is knocked out'],
+    ['Qualifier 2','Loser of Qualifier 1','Winner of Eliminator','Winner goes to the Final'],
+    ['Final','Winner of Qualifier 1','Winner of Qualifier 2','Champions of APL'],
+  ];
+  let prow='';
+  const ps = t + GAP_MIN;
+  PO.forEach(([name,a,b,what])=>{
+    t += GAP_MIN; no++; const s=t, e=t+MATCH_MIN; t=e;
+    prow += `<div class="match po${name==='Final'?' final':''}">
+      <div class="when"><span class="mno">Match ${no}</span><span class="t">${fmt(s)}</span><span class="e">to ${fmt(e)}</span></div>
+      <div class="side"><div class="slot">${a}</div></div>
+      <div class="vs">VS</div>
+      <div class="side away"><div class="slot">${b}</div></div>
+      <div class="pname"><b>${name}</b><span>${what}</span></div>
+    </div>`;
+  });
+  document.getElementById('playoffs').innerHTML = `<div class="rhead"><h3>Playoff Stage</h3><span>${fmt(ps)} – ${fmt(t)}</span></div>${prow}`;
   document.getElementById('endT').textContent = fmt(t);
   let g = '<tr><th>Team</th>'+ROUNDS.map((_,i)=>`<th>Round ${i+1}</th>`).join('')+'</tr>';
   TEAMS.forEach((tm,i)=>{
