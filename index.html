@@ -106,8 +106,7 @@ td .tm{display:block;color:var(--muted);font-size:12px}
       <span class="fact"><b>15</b> league + <b>4</b> playoff matches</span>
       <span class="fact"><b>5</b> rounds</span>
       <span class="fact"><b>30 min</b> per match</span>
-      <span class="fact"><b>5 min</b> change-over</span>
-      <span class="fact"><b>30 min</b> lunch</span>
+      <span class="fact"><b>1 min</b> change-over</span>
       <span class="fact">Ends <b id="endT">—</b></span>
     </div>
   </header>
@@ -131,7 +130,7 @@ td .tm{display:block;color:var(--muted);font-size:12px}
   <section style="display:flex;flex-direction:column;gap:14px">
     <h2>Team Schedules</h2>
     <div class="tablewrap"><table id="grid"></table></div>
-    <p class="note">Every team plays all five others once and plays exactly once in each round. There is a 5-minute change-over between matches; lunch follows straight after Match 9. Change the first-ball time above and every time on the page updates.</p>
+    <p class="note">Every team plays all five others once and plays exactly once in each round. There is a 1-minute change-over between matches and no lunch break. Change the first-ball time above and every time on the page updates.</p>
   </section>
 </div>
 
@@ -145,7 +144,7 @@ const ROUNDS = [
   [[1,4],[3,5],[2,6]],
   [[1,3],[2,4],[6,5]],
 ];
-const MATCH_MIN = 30, GAP_MIN = 5, LUNCH_MIN = 30, LUNCH_AFTER_ROUND = 3;
+const MATCH_MIN = 30, GAP_MIN = 1, LUNCH_MIN = 0, LUNCH_AFTER_ROUND = 0; // no lunch break
 
 const fmt = m => { m = ((m % 1440) + 1440) % 1440; let h = Math.floor(m/60), mi = m%60, ap = h>=12?'PM':'AM'; h = h%12||12; return h+':'+String(mi).padStart(2,'0')+' '+ap; };
 const T = n => TEAMS[n-1];
